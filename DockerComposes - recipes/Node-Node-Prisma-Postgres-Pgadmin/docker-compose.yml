@@ -1,0 +1,105 @@
+version: "3"
+services:
+  #Node App Service
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.dev
+    container_name: node-${APP_NAME}
+    restart: on-failure
+    depends_on:
+      - "db"
+      - "prisma"
+    env_file: .env
+    ports:
+      - "88:5000"
+      - "9229:9229"
+    volumes:
+      - ./app:/home/nodejs/app
+      - /home/nodejs/app/node_modules
+    networks:
+      - containers_net
+
+  #React Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: client-${APP_NAME}
+    restart: on-failure
+    depends_on:
+      - "app"
+    env_file: .env
+    ports:
+      - "80:3000"
+    volumes:
+      - ./client:/home/react/client
+      - /home/react/client/node_modules
+      - /home/react/client/.next
+    networks:
+      - containers_net
+
+  #Prisma Service for graphql
+  prisma:
+    build:
+      context: ./app/prisma
+      dockerfile: Dockerfile.dev
+    container_name: prisma-${APP_NAME}
+    restart: on-failure
+    depends_on:
+      - "db"
+    ports:
+      - "4466:4466"
+    environment:
+      PRISMA_MANAGEMENT_API_JWT_SECRET: ${PRISMA_SECRET}
+      PRISMA_CONFIG_PATH: home/prisma-config.yml
+    networks:
+      - containers_net
+
+  #Postgres DB
+  db:
+    image: "postgres:latest"
+    container_name: postgres-${APP_NAME}
+    restart: on-failure
+    environment:
+      PG_USER: ${DB_USER}
+      PG_PASSWORD: ${DB_PASSWORD}
+      PG_PRIMARY_USER: ${DB_USER}
+      PG_PRIMARY_PASSWORD: ${DB_PASSWORD}
+      PG_ROOT_PASSWORD: ${DB_PASSWORD}
+      PG_PRIMARY_PORT: ${DB_PORT}
+      POSTGRES_DB: ${DB_DATABASE}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - containers_net
+
+  #PGadmin service
+  pgadmin:
+    container_name: pgadmin-${APP_NAME}
+    image: dpage/pgadmin4:latest
+    restart: on-failure
+    depends_on:
+      - "db"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    networks:
+      - containers_net
+
+#Docker Networks
+networks:
+  containers_net:
+    driver: bridge
+
+#Volumes
+volumes:
+  postgres:
+  pgadmin:

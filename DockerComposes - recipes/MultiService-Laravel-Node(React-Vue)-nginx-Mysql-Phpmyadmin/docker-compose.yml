@@ -1,0 +1,110 @@
+version: "3"
+services:
+  #Laravel App
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.dev
+    image: cominity/laravel
+    container_name: app-${APP_NAME}
+    depends_on:
+      - db
+    restart: on-failure
+    tty: true
+    env_file: ./app/.env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - PHP_EXTENSION_XDEBUG=1
+    working_dir: /var/www
+    volumes:
+      - /var/www/node_modules
+      - ./app:/var/www
+      - ./ContainersConfig/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - containers_net
+
+  #React client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: client-${APP_NAME}
+    env_file: ./client/.env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    restart: on-failure
+    volumes:
+      - /home/app/node_modules
+      - ./client:/home/app
+    ports:
+      - "80:3005"
+    networks:
+      - containers_net
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: nginx-${APP_NAME}
+    restart: on-failure
+    depends_on:
+      - app
+      - client
+    tty: true
+    ports:
+      - "81:81"
+      - "80:80"
+    volumes:
+      - ./app:/var/www
+      - ./ContainersConfig/nginx/conf.d/:/etc/nginx/conf.d/
+      #- ./ContainersConfig/nginx/logs:/var/log/nginx
+    networks:
+      - containers_net
+
+  #MySQL Service
+  db:
+    image: mysql:5.7
+    container_name: mysql-${APP_NAME}
+    restart: on-failure
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./ContainersConfig/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - containers_net
+
+  #PhpMyAdmin
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-${APP_NAME}
+    restart: on-failure
+    ports:
+      - "8080:80"
+    volumes:
+      - ./ContainersConfig/phpmyadmin/phpmyadmin-misc.ini:/usr/local/etc/php/conf.d/phpmyadmin-misc.ini
+    environment:
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      - containers_net
+
+#Docker Networks
+networks:
+  containers_net:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local

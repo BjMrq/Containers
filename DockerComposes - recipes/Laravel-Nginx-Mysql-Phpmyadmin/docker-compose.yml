@@ -1,0 +1,92 @@
+version: "3"
+services:
+  #Laravel App
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: cominity/laravel
+    container_name: laravel-${APP_NAME}
+    depends_on:
+      - webserver
+      - db
+    restart: on-failure
+    tty: true
+    env_file: .env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - PHP_EXTENSION_XDEBUG=1
+    working_dir: /var/www
+    volumes:
+      - /var/www/node_modules
+      - ./:/var/www
+      - ./ContainersConfig/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    networks:
+      - containers_net
+
+  #Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: nginx-${APP_NAME}
+    restart: on-failure
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./ContainersConfig/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - containers_net
+
+  #MySQL Service
+  db:
+    image: mysql:5.7
+    container_name: mysql-${APP_NAME}
+    restart: on-failure
+    tty: true
+    ports:
+      - "3360:3360"
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./ContainersConfig/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - containers_net
+
+  #PhpMyAdmin
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-${APP_NAME}
+    restart: on-failure
+    ports:
+      - "8080:80"
+    volumes:
+      - ./ContainersConfig/phpmyadmin/phpmyadmin-misc.ini:/usr/local/etc/php/conf.d/phpmyadmin-misc.ini
+    environment:
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      - containers_net
+
+#Docker Networks
+networks:
+  containers_net:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
