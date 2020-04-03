@@ -27,7 +27,7 @@ RUN mkdir app && chown -R node:node .
 USER node
 
 # Install prod dependencies
-RUN npm install --only=production && npm cache clean force
+RUN npm install --only=production && npm cache clean --force
 
 # Change for app directory
 WORKDIR /home/node/app
@@ -48,6 +48,6 @@ FROM prod as dev
 ENV NODE_ENV=devellopment
 
 # Install prod dependencies
-RUN npm install --only=devellopment
+RUN npm install --only=dev
 
 CMD [ "yarn", "dev" ]
