@@ -1,0 +1,10 @@
+.git
+*Dockerfile*
+*docker-compose*
+node_modules/
+npm-debug
+README.md
+.env
+storage/framework/cache/**
+storage/framework/sessions/**
+storage/framework/views/**
