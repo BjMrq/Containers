@@ -1,5 +1,5 @@
 # Prod building stage
-FROM node:13 as prod
+FROM node:13 as base
 
 # Update container
 RUN apt-get update
@@ -12,13 +12,11 @@ RUN chmod +x /tini
 # Set environement to production
 ENV NODE_ENV=production
 
-RUN apt-get update
-
 # Create node directory 
-WORKDIR /home/node
+WORKDIR /node
 
 # Copy npm dependencies
-COPY package*.json yarn.lock* ./
+COPY package*.json ./
 
 # Create app directory to contain the app and set permision for node user
 RUN mkdir app && chown -R node:node .
@@ -27,13 +25,12 @@ RUN mkdir app && chown -R node:node .
 USER node
 
 # Install prod dependencies
-RUN npm install --only=production && npm cache clean --force
+RUN npm config list
+RUN npm ci \
+  && npm cache clean --force
 
-# Change for app directory
-WORKDIR /home/node/app
-
-# Copy existing local files into container, and set permission to node user
-COPY --chown=node:node  . .
+# Add to PATH
+ENV PATH /node/node_modules/.bin/:$PATH
 
 # Tiny entrypoint
 ENTRYPOINT ["/tini", "--"]
@@ -42,12 +39,17 @@ ENTRYPOINT ["/tini", "--"]
 CMD ["node", "./bin/www"]
 
 # Dev building stage
-FROM prod as dev
+FROM base as dev
 
 # Set environement to devellopment
 ENV NODE_ENV=devellopment
 
-# Install prod dependencies
-RUN npm install --only=dev
+# Install dev dependencies
+RUN npm config list
+RUN npm install --only=dev \
+  && npm cache clean --force
 
 CMD [ "yarn", "dev" ]
+
+FROM base as prod
+

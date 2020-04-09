@@ -15,7 +15,7 @@ ENV NODE_ENV=devellopment
 WORKDIR /node
 
 # Copy npm dependencies
-COPY package.json package-lock.json* yarn.lock* ./
+COPY package*.json yarn.lock* ./
 
 # Create app directory to contain the app and set permision for node user
 RUN mkdir app && chown -R node:node .
@@ -26,8 +26,11 @@ USER node
 # Install dependencies
 RUN yarn install && yarn cache clean
 
+# Add to PATH
+ENV PATH /node/node_modules/.bin/:$PATH
+
 # Change for app directory
-WORKDIR /home/node/app
+WORKDIR /node/app
 
 # Copy existing local files into container, and set permission to node user
 COPY --chown=node:node  . .

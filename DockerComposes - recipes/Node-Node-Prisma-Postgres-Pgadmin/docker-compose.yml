@@ -1,12 +1,11 @@
-version: "3"
+version: "2.4"
 services:
   #Node App Service
   app:
     build:
       context: ./app
       dockerfile: Dockerfile.dev
-    container_name: node-${APP_NAME}
-    restart: on-failure
+    container_name: app-${APP_NAME}
     depends_on:
       - "db"
       - "prisma"
@@ -15,10 +14,8 @@ services:
       - "88:5000"
       - "9229:9229"
     volumes:
-      - ./app:/home/node/app
-      - /home/node/app/node_modules
-    networks:
-      - containers_net
+      - ./app:/node/app
+      - /node/app/node_modules
 
   # Client
   client:
@@ -26,24 +23,22 @@ services:
       context: ./client
       dockerfile: Dockerfile.dev
     container_name: client-${APP_NAME}
-    restart: on-failure
     depends_on:
       - "app"
     env_file: .env
     ports:
       - "80:3000"
     volumes:
-      - ./client:/home/node/app
-      - /home/node/app/node_modules
-      - /home/node/app/.next
-    networks:
-      - containers_net
+      - ./client:/node/app:delegated
+      - /node/app/node_modules
+      - /node/app/.next
 
   #Postgres DB
   db:
     image: "postgres:12"
-    container_name: postgres-${APP_NAME}
-    restart: on-failure
+    container_name: db-${APP_NAME}
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -54,16 +49,14 @@ services:
       - postgres:/data/postgres
     ports:
       - "5432:5432"
-    networks:
-      - containers_net
 
   #PGadmin service
   pgadmin:
-    container_name: pgadmin-${APP_NAME}
     image: dpage/pgadmin4:latest
-    restart: on-failure
+    container_name: pgadmin-${APP_NAME}
     depends_on:
-      - "db"
+      db:
+        condition: service_healthy
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
@@ -71,13 +64,6 @@ services:
       - pgadmin:/var/lib/pgadmin
     ports:
       - "8080:80"
-    networks:
-      - containers_net
-
-#Docker Networks
-networks:
-  containers_net:
-    driver: bridge
 
 #Volumes
 volumes:
