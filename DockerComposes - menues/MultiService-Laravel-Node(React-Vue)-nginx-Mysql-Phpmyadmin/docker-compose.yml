@@ -8,8 +8,7 @@ services:
     container_name: app-${APP_NAME}
     image: cominity/laravel
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     tty: true
     env_file: ./app/.env
     environment:
@@ -28,13 +27,16 @@ services:
       dockerfile: Dockerfile.dev
     container_name: client-${APP_NAME}
     env_file: ./client/.env
+    ports:
+      # This port mapping is for hot reload only
+      - 3000:3000
     environment:
-      CHOKIDAR_USEPOLLING: "true"
+      # Needs to be set to 0.0.0.0
+      - HOST=0.0.0.0
+      - PORT=3000
     volumes:
       - /node/app/node_modules
       - ./client:/node/app:delegated
-    ports:
-      - "80:3005"
 
   #Nginx Service
   webserver:
@@ -50,14 +52,13 @@ services:
     volumes:
       - ./app:/var/www
       - ./ContainersConfig/nginx/conf.d/:/etc/nginx/conf.d/
+      # uncomment for debbuging
       #- ./ContainersConfig/nginx/logs:/var/log/nginx
 
   #MySQL Service
   db:
     image: mysql:5.7
     container_name: db-${APP_NAME}
-    healthcheck:
-      test: mysqladmin ping -h 127.0.0.1
     tty: true
     ports:
       - "3306:3306"
@@ -77,8 +78,7 @@ services:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin-${APP_NAME}
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     ports:
       - "8080:80"
     volumes:
