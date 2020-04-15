@@ -45,8 +45,8 @@ CMD ["node", "./bin/www"]
 #-----------------------------------------
 FROM base as dev
 
-# Set environement to devellopment
-ENV NODE_ENV=devellopment
+# Set environnement to development
+ENV NODE_ENV=development
 
 # Add dependencies
 USER root
@@ -64,7 +64,7 @@ RUN npm config list
 RUN npm install --only=dev \
   && npm cache clean --force
 
-# Create app directory to contain the app and set permision for node user
+# Create app directory to contain the app and set permission for node user
 RUN mkdir app && chown -R node:node .
 
 # Change for app directory

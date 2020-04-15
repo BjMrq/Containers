@@ -10,8 +10,8 @@ ENV TINI_VERSION v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
-# Set environement to devellopment
-ENV NODE_ENV=devellopment
+# Set environnement to development
+ENV NODE_ENV=development
 
 # Create node directory 
 WORKDIR /node
@@ -19,7 +19,7 @@ WORKDIR /node
 # Copy npm dependencies
 COPY package*.json yarn.lock* ./
 
-# Create app directory to contain the app and set permision for node user
+# Create app directory to contain the app and set permission for node user
 RUN mkdir app && chown -R node:node .
 
 # Change the user to be node
@@ -37,7 +37,7 @@ WORKDIR /node/app
 # Copy existing local files into container, and set permission to node user
 COPY --chown=node:node  . .
 
-# For nuxt or next app in devellopment
+# For client frameworks in development
 #ENV HOST 0.0.0.0
 
 # Tiny entrypoint
