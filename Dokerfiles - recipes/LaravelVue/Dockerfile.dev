@@ -1,23 +1,24 @@
 FROM bjmrq/laravel:php-7.4
 
-# Install Xdebug
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug
-
 # Add user for laravel application
 RUN groupadd -g 1000 www
 RUN useradd -u 1000 -ms /bin/bash -g www www
 
-# Install npm dependencies
-COPY --chown=www:www package.json package-lock.json* yarn.lock* /var/www/
-RUN yarn install
-
-# Copy existing application directory permissions
-RUN chown -R www:www /var/www
-COPY --chown=www:www . /var/www
+# Change permission to allow www to add packages
+RUN chown -R www:www .
 
 # Change current user to www
 USER www
+
+# Install npm dependencies
+COPY --chown=www:www package.json package-lock.json* yarn.lock* /var/www/
+RUN yarn install && yarn cache clean
+
+# Add to PATH
+ENV PATH /var/www/node_modules/.bin/:$PATH
+
+# Copy existing application directory permissions
+COPY --chown=www:www . /var/www
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
