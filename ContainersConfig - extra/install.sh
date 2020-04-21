@@ -1,5 +1,6 @@
 #!/bin/sh
 
+cd ..
 cp .env.example .env
 docker run --rm -v $(pwd):/app composer install
 docker-compose up --build -d
