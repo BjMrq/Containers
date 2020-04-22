@@ -6,16 +6,11 @@ FROM node:13-slim as base
 # Set environement to production
 ENV NODE_ENV=production
 
-# Tiny allows to gracefully stop node process
-ENV TINI_VERSION v0.18.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
-
 # Create node directory 
 WORKDIR /node
 
 # Copy npm dependencies
-COPY package*.json ./
+COPY package*.json yarn.lock* ./
 
 # Create app directory to contain the app and set permision for node user
 RUN mkdir app && chown -R node:node .
@@ -33,9 +28,6 @@ ENV PATH /node/node_modules/.bin/:$PATH
 
 # Change for app directory
 WORKDIR /node/app
-
-# Tiny entrypoint
-ENTRYPOINT ["/tini", "--"]
 
 # Start Node
 CMD ["node", "./bin/www"]

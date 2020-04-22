@@ -10,16 +10,6 @@ RUN chown -R www:www .
 # Change current user to www
 USER www
 
-# Install npm dependencies
-COPY --chown=www:www package.json package-lock.json* yarn.lock* /var/www/
-RUN yarn install && yarn cache clean
-
-# Add to PATH
-ENV PATH /var/www/node_modules/.bin/:$PATH
-
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www
-
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
