@@ -10,21 +10,23 @@ RUN chown -R www:www .
 # Change current user to www
 USER www
 
-# Set development env
-ENV NODE_ENV=development
-
 # Install npm dependencies
 COPY --chown=www:www package.json package-lock.json* yarn.lock* /var/www/
-RUN yarn install && yarn cache clean
+RUN yarn --ignore-engines --pure-lockfile
 
 # Add to PATH
 ENV PATH /var/www/node_modules/.bin/:$PATH
 
+# Run tour production command
+RUN yarn production
+
 # Copy existing application directory permissions
 COPY --chown=www:www . /var/www
 
+# Install Composer dependencies
+RUN composer self-update
+RUN composer install --ignore-platform-reqs --no-interaction --prefer-dist --no-suggest --optimize-autoloader
+
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
-
-# This command will required to have previously installed Composer dependencies (using install.sh in ContainerConfig)
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["php-fpm", "--allow-to-run-as-root"]
