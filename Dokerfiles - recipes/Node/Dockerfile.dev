@@ -5,11 +5,6 @@ RUN apt-get update && \
   apt-get install --no-install-recommends -y && \
   rm -rf /var/lib/apt/lists/*
 
-# Tiny allows to gracefully stop node process
-ENV TINI_VERSION v0.18.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-RUN chmod +x /tini
-
 # Set environnement to development
 ENV NODE_ENV=development
 
