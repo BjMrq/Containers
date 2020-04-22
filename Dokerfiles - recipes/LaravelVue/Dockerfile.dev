@@ -14,7 +14,7 @@ USER www
 ENV NODE_ENV=development
 
 # Install npm dependencies
-COPY --chown=www:www package.json package-lock.json* yarn.lock* /var/www/
+COPY --chown=www:www package*.json yarn.lock* /var/www/
 RUN yarn install && yarn cache clean
 
 # Add to PATH

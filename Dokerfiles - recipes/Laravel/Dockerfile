@@ -12,6 +12,10 @@ COPY --chown=www:www . /var/www
 RUN composer self-update
 RUN composer install --ignore-platform-reqs --no-interaction --prefer-dist --no-suggest --optimize-autoloader
 
+# Install Xdebug after Composer install because it can slow it down
+RUN pecl install xdebug \
+  && docker-php-ext-enable xdebug
+
 # Change current user to www
 USER www
 

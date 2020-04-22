@@ -1,7 +1,10 @@
 .git
 *Dockerfile*
 *docker-compose*
+vendor/
 node_modules/
+public/js/
+public/css/
 npm-debug
 README.md
 **/log*
