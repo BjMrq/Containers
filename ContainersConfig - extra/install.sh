@@ -1,10 +1,16 @@
 #!/bin/sh
 
 cd ..
-echo "Copying environement variables.."
-cp .env.example .env
+
+ENV=./.env
+if ! test -f "$ENV"; then
+  echo "Copying environement variables.."
+  cp .env.example .env
+fi
+
 echo "Installing Composer dependencies.."
 docker run --rm -v $(pwd):/app composer install
+
 echo "Building Containers.."
 docker-compose up --build -d
 
