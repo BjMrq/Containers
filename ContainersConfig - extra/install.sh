@@ -1,8 +1,17 @@
 #!/bin/sh
 
 cd ..
+echo "Copying environement variables.."
 cp .env.example .env
+echo "Installing Composer dependencies.."
 docker run --rm -v $(pwd):/app composer install
+echo "Building Containers.."
 docker-compose up --build -d
-docker-compose exec app php artisan migrate
-docker-compose exec app php artisan db:seed
+
+DATABASE=./ContainersConfig/mysql/databases/database_snapshot.sql
+if test -f "$DATABASE"; then
+  echo "Importing database.."
+  docker-compose exec -T db mysql -u user --password=password project_db < ./ContainersConfig/mysql/databases/database_snapshot.sql
+fi
+
+echo "Installation complete"

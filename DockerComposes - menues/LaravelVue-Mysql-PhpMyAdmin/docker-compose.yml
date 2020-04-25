@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: php.Dockerfile
     container_name: app-${APP_NAME}
     depends_on:
       - "db"
@@ -14,6 +14,7 @@ services:
       - PHP_EXTENSION_XDEBUG=1
     working_dir: /var/www
     volumes:
+      - /var/www/vendor
       - /var/www/node_modules
       - ./:/var/www:delegated
       - ./ContainersConfig/php/local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -23,17 +24,17 @@ services:
   client:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: node.Dockerfile
     command: "yarn watch"
     container_name: client-${APP_NAME}
     depends_on:
       - "app"
     tty: true
     env_file: .env
-    working_dir: /var/www
+    working_dir: /node/app
     volumes:
-      - /var/www/node_modules
-      - ./:/var/www:delegated
+      - /node/app/node_modules
+      - ./:/node/app:delegated
     ports:
       - "3000:3000"
       - "3001:3001"

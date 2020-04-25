@@ -1,13 +1,18 @@
 FROM node:13-slim
 
+# Update container
+# RUN apt-get update && \
+#   apt-get install --no-install-recommends -y && \
+#   rm -rf /var/lib/apt/lists/*
+
 # Set environnement to development
 ENV NODE_ENV=development
 
-# Change for app directory
+# Create node directory 
 WORKDIR /node/app
 
 # Copy npm dependencies
-COPY package*.json yarn.lock* ./
+COPY package*.json webpack.mix.js yarn.lock* ./
 
 # Create app directory to contain the app and set permission for node user
 RUN chown -R node:node .
@@ -21,12 +26,10 @@ RUN yarn install && yarn cache clean
 # Add to PATH
 RUN npm config set scripts-prepend-node-path true
 
+
 # Copy existing local files into container, and set permission to node user
-COPY --chown=node:node  . .
+COPY --chown=node:node  . ./
 
-# For client frameworks in development
-#ENV HOST 0.0.0.0
 
-# Use your dev command described in package.json
-CMD [ "yarn", "dev" ]
+CMD [ "yarn", "watchl" ]
 
