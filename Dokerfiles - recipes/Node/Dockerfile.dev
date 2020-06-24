@@ -19,6 +19,7 @@ USER node
 RUN yarn install && yarn cache clean
 
 # Add to PATH
+ENV PATH="$PATH:./node_modules/.bin"
 RUN npm config set scripts-prepend-node-path true
 
 # Copy existing local files into container, and set permission to node user
