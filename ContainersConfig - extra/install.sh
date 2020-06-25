@@ -9,7 +9,8 @@ if ! test -f "$ENV"; then
 fi
 
 echo "Installing Composer dependencies.."
-docker run --rm -v $(pwd):/app composer install
+docker run --rm -v $(pwd):/var/www --env COMPOSER_MEMORY_LIMIT=-1 \
+  bjmrq/laravel:php-7.4 composer install
 
 echo "Building Containers.."
 docker-compose up --build -d
