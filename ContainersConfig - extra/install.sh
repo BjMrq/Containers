@@ -8,20 +8,13 @@ if ! test -f "$ENV"; then
   cp .env.example .env
 fi
 
-
-echo "Installing Composer dependencies 🛠"
-docker run --rm -v $(pwd):/var/www --env COMPOSER_MEMORY_LIMIT=-1 \
-  bjmrq/laravel:php-7.4 composer install
-
 echo "Updating Composer 🔨"
 docker run --rm -v $(pwd):/var/www --env COMPOSER_MEMORY_LIMIT=-1 \
   bjmrq/laravel:php-7.4 composer update
 
-
 echo "Building Docker Containers 🐳"
 cd ..
 docker-compose up --build -d
-
 
 cd app/
 DATABASE=./ContainersConfig/mysql/databases/database_snapshot.sql
