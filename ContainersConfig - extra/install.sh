@@ -10,6 +10,10 @@ fi
 
 echo "Updating Composer 🔨"
 docker run --rm -v $(pwd):/var/www --env COMPOSER_MEMORY_LIMIT=-1 \
+  bjmrq/laravel:php-7.4 composer install
+
+echo "Updating Composer ⛏"
+docker run --rm -v $(pwd):/var/www --env COMPOSER_MEMORY_LIMIT=-1 \
   bjmrq/laravel:php-7.4 composer update
 
 echo "Building Docker Containers 🐳"
