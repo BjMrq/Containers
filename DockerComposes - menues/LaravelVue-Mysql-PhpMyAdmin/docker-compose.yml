@@ -74,3 +74,4 @@ services:
 volumes:
   dbdata:
     driver: local
+    name: ${APP_NAME}-volume
