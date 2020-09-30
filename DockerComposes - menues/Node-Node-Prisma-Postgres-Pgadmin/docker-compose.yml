@@ -52,7 +52,7 @@ services:
 
   #PGadmin service
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:4.25
     container_name: pgadmin-${APP_NAME}
     depends_on:
       db:
@@ -68,6 +68,6 @@ services:
 #Volumes
 volumes:
   postgres:
-    name: ${APP_NAME}-postgres-volume
+    name: ${APP_NAME}-postgres
   pgadmin:
-    name: ${APP_NAME}-pgadmin-volume
+    name: ${APP_NAME}-pgadmin
